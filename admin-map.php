@@ -30,6 +30,7 @@ include_once 'dbc.php';
     var marker;
     var infowindow;
     var red_icon =  'http://maps.google.com/mapfiles/ms/icons/red-dot.png' ;
+    var green_icon =  'http://maps.google.com/mapfiles/ms/icons/green-dot.png' ;
     var purple_icon =  'http://maps.google.com/mapfiles/ms/icons/purple-dot.png' ;
     var locations = <?php get_all_locations() ?>;
 
@@ -46,7 +47,7 @@ include_once 'dbc.php';
             marker = new google.maps.Marker({
                 position: new google.maps.LatLng(locations[i][1], locations[i][2]),
                 map: map,
-                icon :   locations[i][5] === '1' ?  red_icon  : purple_icon,
+                icon :   locations[i][5] === '1' ?  green_icon  : purple_icon,
                 html: document.getElementById('form')
             });
 

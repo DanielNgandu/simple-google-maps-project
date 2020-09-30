@@ -8,15 +8,10 @@ include 'dbc.php';
 $select = mysqli_query($con, "SELECT img FROM locations1 ");
 
 while ($rowval = mysqli_fetch_array($select)) {
-    //$id= $rowval['id'];
-    // $lat = $rowval ['lat'];
-    //$lng = $rowval ['lng'];
-    //$description = $rowval['description'];
-    //$status = $rowval ['location_status'];
-    $img = $rowval['img'];
-    //$created = $rowval ['created'];
 
-    //echo" error".mysqli_error($con);
+    $img = $rowval['img'];
+
+
     ?>
     <script type="text/javascript"
             src="https://maps.googleapis.com/maps/api/js?language=en&key=AIzaSyBPnTnBYHZcQB7lCjzarHNyGH9ToUNPk_Y">
@@ -24,6 +19,7 @@ while ($rowval = mysqli_fetch_array($select)) {
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
     <div id="map"></div>
+    <div id="legend"><h3>Legend</h3></div>
     <script>
         /**
          * Create new map
@@ -31,7 +27,9 @@ while ($rowval = mysqli_fetch_array($select)) {
         var infowindow;
         var map;
         var red_icon = 'http://maps.google.com/mapfiles/ms/icons/red-dot.png';
+        var yellow_icon = 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png';
         var purple_icon = 'http://maps.google.com/mapfiles/ms/icons/purple-dot.png';
+        var green_icon = 'http://maps.google.com/mapfiles/ms/icons/green-dot.png';
         var locations = <?php get_confirmed_locations()?>;
         var myOptions = {
             zoom: 7,
@@ -79,19 +77,23 @@ while ($rowval = mysqli_fetch_array($select)) {
                 map: map,
                 animation: google.maps.Animation.DROP,
                 id: 'marker_' + markerId,
-                html: "   <form id='addNewMarkerForm' name='addNewMarkerForm' method='post' onsubmit='postData()'> <div id='info_" + markerId + "'>\n" +
-                    "        <table class=\"map1\">\n" +
-                    "            <tr>\n" +
-                    "           <tr><a>Attach Photo:</a></tr>\n" +
-                    "           <td><input type='file' id='img' name='htmlFileUpload'/></td>" +
-                    "                <td><label>Description:</label></td>\n" +
-                    "                <td><textarea  id='description' placeholder='Description'></textarea></td></tr>\n" +
-                    "                <td>" +
-                    "<input  id='lat' hidden='hidden'  value="+lat+" placeholder='lat'></td></tr>\n" +
-                    "<input hidden='hidden'  id='lng' value="+lng+" placeholder='lat'></td></tr>\n" +
-                    "            <tr><td></td><td><input type='submit' value='Save' /></td></tr>\n" +
-                    "        </table>\n" +
-                    "    </div></form>"
+                html: "<form id='addNewMarkerForm' name='addNewMarkerForm' method='post' onsubmit='postData()'> <div id='info_" + markerId + "'>"
+                    +
+                    "<div class='form-group'><label>Attach Photo:</label>" +
+                    "<input class ='form-control' type='file' id='img' name='htmlFileUpload' required='required'/></div><hr/>" +
+                    "<div class='form-group'><label for='exampleFormControlSelect1'>Select Description Type</label>" +
+                    "<select class='form-control' id='description_type_id'>" +
+                    "<option value ='0'>--Select--</option>" +
+                    "<option value ='1'>Tree Planting</option>" +
+                    "<option value ='2'>Deforestation</option>" +
+                    "<option value ='3'>Others</option>" +
+                    +"</select></div><hr/>" +
+                    "<br/><div class='form-group'><br><label>Enter Description:</label>" +
+                    "<textarea class ='form-control' required='required'  id='description' placeholder='Description...........'></textarea></div>" +
+                    "<input  id='lat' hidden='hidden'  value=" + lat + " placeholder='lat'>" +
+                    "<input hidden='hidden'  id='lng' value=" + lng + " placeholder='lat'><hr/>" +
+                    "<button  class ='btn btn-lg btn-success form-control'  type='submit' value='Save'>Submit</button>" +
+                    "</div></div></form>"
             });
             markers[markerId] = marker; // cache marker in markers object
             bindMarkerEvents(marker); // bind right click event to marker
@@ -143,22 +145,25 @@ while ($rowval = mysqli_fetch_array($select)) {
         var i;
         var confirmed = 0;
         for (i = 0; i < locations.length; i++) {
-            var image = '<?php echo $img; ?>';
+            var image = locations[i][4];
+            var lat = locations[i][1];
+            var lng = locations[i][2];
 
             marker = new google.maps.Marker({
 
                 position: new google.maps.LatLng(locations[i][1], locations[i][2]),
                 map: map,
-                icon: locations[i][5] === '1' ? red_icon : purple_icon,
-                html: "<div>\n" +
-                    "<table class=\"map1\">\n" +
-                    "<th>Photo:</th>\n" +
-                    "<td style=width='100'><img src ='images/"+ image.replace(/C:\\fakepath\\/i, '') + "' height='150' width= '150'/></td>\n" +
-                    "<tr>\n" +
-                    "<td><a>Description:</a></td>\n" +
-                    "<td><textarea disabled id='manual_description' placeholder='Description'>" + locations[i][3] + "</textarea></td></tr>\n" +
-                    "</table>\n" +
-                    "</div>"
+                icon: locations[i][7] === '1' ? green_icon: locations[i][7] === '2' ? red_icon: yellow_icon,
+                html:  "<form> <div id='info'>"
+                    +
+                    "<div class='form-group'><label>Uploaded Photo:</label>" +
+                    "<img src ='images/"+ image.replace(/C:\\fakepath\\/i, '') + "' height='150' width= '150'/></div><hr/>" +
+                    "<div class='form-group'><label for='exampleFormControlSelect1'>Description Type</label>" +
+                    "<input disabled='disabled' id='description_type' value="+ locations[i][6]+"><hr/></div>" +
+                    "<div class='form-group'><br><label>Enter Description:</label>" +
+                    "<textarea disabled='disabled' class ='form-control' required='required'  id='description' placeholder='Description...........'>"+locations[i][3]+" </textarea></div>" +
+                    "<input  id='lat'   value=" + lat + " placeholder='lat' disabled='disabled'>" +
+                    "<input   id='lng' value=" + lng + " placeholder='lat' disabled='disabled'><hr/></div></div></form>"
             });
 
             google.maps.event.addListener(marker, 'click', (function (marker, i) {
@@ -168,6 +173,7 @@ while ($rowval = mysqli_fetch_array($select)) {
                     $("#confirmed").prop(confirmed, locations[i][5]);
                     $("#id").val(locations[i][0]);
                     $("#description").val(locations[i][3]);
+                    $("#description_type").val(locations[i][6]);
                     $("#img").val(locations[i][4]);
                     $("#form").show();
                     infowindow.setContent(marker.html);
@@ -187,18 +193,13 @@ while ($rowval = mysqli_fetch_array($select)) {
             var url = 'locations_model.php';
             downloadUrl(url, description, img, lat, lng, function (data, responseCode) {
                 // if (responseCode === 200 && data.length === 4) {
-                    var markerId = getMarkerUniqueId(lat, lng); // get marker id by using clicked point's coordinate
-                    var manual_marker = markers[markerId]; // find marker
-                    manual_marker.setIcon(purple_icon);
-                    infowindow.close();
-                    infowindow.setContent("<div style=' color: purple; font-size: 25px;'> Waiting for admin to confirm!!</div>");
-                    infowindow.open(map, manual_marker);
+                var markerId = getMarkerUniqueId(lat, lng); // get marker id by using clicked point's coordinate
+                var manual_marker = markers[markerId]; // find marker
+                manual_marker.setIcon(purple_icon);
+                infowindow.close();
+                infowindow.setContent("<div style=' color: purple; font-size: 25px;'> Waiting for admin to confirm!!</div>");
+                infowindow.open(map, manual_marker);
 
-                // } else {
-                //     console.log(responseCode);
-                //     console.log(data);
-                //     infowindow.setContent("<div style='color: red; font-size: 25px;'>Inserting Errors</div>");
-                // }
             });
         }
 
@@ -220,58 +221,52 @@ while ($rowval = mysqli_fetch_array($select)) {
             xhttp.open("POST", "add_location.php", true);
             xhttp.send(formData);
         }
-        
+
         function postData() {
             event.preventDefault();
-        // alert("Hellow");
-        //     alert(document.getElementById('lat').value);
-        //     var form = $('form').serialize();
-            // window.alert(form);
-            // console.log(form.val);
-            var file = $('#img').prop('files')[0];
-            var description = $('#description').val();
-            var lat = $('#lat').val();
-            var lng = $('#lng').val();
-            // var submit = 'true';
-            var formData = new FormData();
-            formData.append("description", description);
-            formData.append("img", file);
-            formData.append("lat", lat);
-            formData.append("lng", lng);
-            formData.append("submit", 'true');
+            var a = $('#description_type_id').val();
+            if (a !== 0) {
+                var file = $('#img').prop('files')[0];
+                var description = $('#description').val();
+                var description_type_id = $('#description_type_id').val();
+                var lat = $('#lat').val();
+                var lng = $('#lng').val();
+                // var submit = 'true';
+                var formData = new FormData();
+                formData.append("description", description);
+                formData.append("description_type_id", description_type_id);
+                formData.append("img", file);
+                formData.append("lat", lat);
+                formData.append("lng", lng);
+                formData.append("submit", 'true');
 
-            $.ajax({
-                url: 'add_location.php',
+                $.ajax({
+                    url: 'add_location.php',
                     contentType: false, // important
                     processData: false, // important
 
                     data: formData,
-                method: 'post',
-                success: function(data) {
-                    var markerId = getMarkerUniqueId(lat, lng); // get marker id by using clicked point's coordinate
-                    var manual_marker = markers[markerId]; // find marker
-                    manual_marker.setIcon(purple_icon);
-                    infowindow.close();
-                    infowindow.setContent("<div style=' color: purple; font-size: 25px;'> Waiting for admin to confirm!!</div>");
-                    infowindow.open(map, manual_marker);
-                    console.log(data);
-                }
-            });
+                    method: 'post',
+                    success: function (data) {
+                        var markerId = getMarkerUniqueId(lat, lng); // get marker id by using clicked point's coordinate
+                        var manual_marker = markers[markerId]; // find marker
+                        manual_marker.setIcon(purple_icon);
+                        infowindow.close();
+                        infowindow.setContent("<div style=' color: purple; font-size: 25px;'> Waiting for admin to confirm!!</div>");
+                        infowindow.open(map, manual_marker);
+                        console.log(data);
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        console.log(thrownError + " " + xhr.statusText + " " + xhr.responseText);
+                        console.log(data);
+                        infowindow.setContent("<div style='color: red; font-size: 25px;'>Failed to add new marker!</div>");
+                    }
+                });
+            } else
+                infowindow.setContent("<div style='color: red; font-size: 25px;'>Error!Please Select Description Type and Try Again</div>");
 
         }
-        // $('#addNewMarkerForm').submit(function(e) {
-        //     e.preventDefault();
-        //     // get all the inputs into an array.
-        //     var $inputs = $('#addNewMarkerForm :input');
-        //    console.log($inputs);
-        //     // not sure if you wanted this, but I thought I'd add it.
-        //     // get an associative array of just the values.
-        //     var values = {};
-        //     $inputs.each(function() {
-        //         values[this.name] = $(this).val();
-        //     });
-        //
-        // });
+
     </script>
     <?php
     include_once 'footer.php';

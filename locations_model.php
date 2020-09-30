@@ -9,27 +9,27 @@ if (isset($_GET['confirm_location'])) {
 }
 function add_location()
 {
-    if(isset($_POST["submit"])) {
-    $con = mysqli_connect("localhost", 'root', '', 'tree');
-    if (!$con) {
-        die('Not connected : ' . mysqli_connect_error());
-    }
-    $lat = $_POST['lat'];
-    $lng = $_POST['lng'];
-    // $img =$_GET['img'];
-    $description = $_POST['description'];
-    $img = $_POST['img'];
+    if (isset($_POST["submit"])) {
+        $con = mysqli_connect("localhost", 'root', '', 'tree');
+        if (!$con) {
+            die('Not connected : ' . mysqli_connect_error());
+        }
+        $lat = $_POST['lat'];
+        $lng = $_POST['lng'];
+        // $img =$_GET['img'];
+        $description = $_POST['description'];
+        $img = $_POST['img'];
 //    echo $img;
-    $target_dir = "images/";
-    $target_file = $target_dir . basename($_FILES["img"]["name"]);
-    echo $target_file;
-    $uploadOk = 1;
-    $imageFileType = strtolower(pathinfo($target_file,PATHINFO_EXTENSION));
+        $target_dir = "images/";
+        $target_file = $target_dir . basename($_FILES["img"]["name"]);
+        echo $target_file;
+        $uploadOk = 1;
+        $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
 
 // Check if image file is a actual image or fake image
 
         $check = getimagesize($_FILES["fileToUpload"]["tmp_name"]);
-        if($check !== false) {
+        if ($check !== false) {
             echo "File is an image - " . $check["mime"] . ".";
             $uploadOk = 1;
         } else {
@@ -51,8 +51,8 @@ function add_location()
     }
 
 // Allow certain file formats
-    if($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
-        && $imageFileType != "gif" ) {
+    if ($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
+        && $imageFileType != "gif") {
         echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
         $uploadOk = 0;
     }
@@ -63,7 +63,7 @@ function add_location()
 // if everything is ok, try to upload file
     } else {
         if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
-            echo "The file ". htmlspecialchars( basename( $_FILES["fileToUpload"]["name"])). " has been uploaded.";
+            echo "The file " . htmlspecialchars(basename($_FILES["fileToUpload"]["name"])) . " has been uploaded.";
         } else {
             echo "Sorry, there was an error uploading your file.";
         }
@@ -84,6 +84,7 @@ function add_location()
         die('Invalid query: ' . mysqli_error($con));
     }
 }
+
 function confirm_location()
 {
     $con = mysqli_connect("localhost", 'root', '', 'tree');
@@ -100,6 +101,7 @@ function confirm_location()
         die('Invalid query: ' . mysqli_error($con));
     }
 }
+
 function get_confirmed_locations()
 {
     $con = mysqli_connect("localhost", 'root', '', 'tree');
@@ -107,10 +109,10 @@ function get_confirmed_locations()
         die('Not connected : ' . mysqli_connect_error());
     }
     // update location with location_status if admin location_status.
-    $sqldata = mysqli_query($con, "
-select id ,lat,lng,description,img,location_status as isconfirmed
-from locations1 WHERE  location_status = 1
-  ");
+    $sqldata = mysqli_query($con, "SELECT l.id ,l.lat,l.lng,l.description,l.img,l.location_status as isconfirmed,dt.type,l.description_type_id
+FROM locations1 l 
+    INNER JOIN description_type dt ON dt.id = l.description_type_id
+WHERE location_status = 1");
     $rows = array();
     while ($r = mysqli_fetch_assoc($sqldata)) {
         $rows[] = $r;
@@ -122,6 +124,7 @@ from locations1 WHERE  location_status = 1
         return null;
     }
 }
+
 function get_all_locations()
 {
     $con = mysqli_connect("localhost", 'root', '', 'tree');
@@ -144,6 +147,7 @@ from locations1
         return null;
     }
 }
+
 function array_flatten($array)
 {
     if (!is_array($array)) {
