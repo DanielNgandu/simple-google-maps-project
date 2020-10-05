@@ -132,10 +132,10 @@ function get_all_locations()
         die('Not connected : ' . mysqli_connect_error());
     }
     // update location with location_status if admin location_status.
-    $sqldata = mysqli_query($con, "
-select id ,lat,lng,img,description,location_status as isconfirmed
-from locations1
-  ");
+    $sqldata = mysqli_query($con, "SELECT l.id ,l.lat,l.lng,l.description,l.img,l.location_status as isconfirmed,dt.type,l.description_type_id
+FROM locations1 l 
+    INNER JOIN description_type dt ON dt.id = l.description_type_id
+WHERE location_status IN (0,1)");
     $rows = array();
     while ($r = mysqli_fetch_assoc($sqldata)) {
         $rows[] = $r;
